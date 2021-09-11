@@ -2,9 +2,11 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 4000;
 const puppeteer = require("puppeteer");
+const cors = require("cors");
 
 //Serving static files
 app.use(express.static("public"));
+app.use(cors());
 
 async function configureTheBrowser(url) {
   const browser = await puppeteer.launch({
