@@ -23,6 +23,7 @@ app.get("/getResult/:ticker", async (req, res) => {
   const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=NSE:${ticker}&theme=dark`;
   let page = await configureTheBrowser(url);
   let results = await page.content();
+  await page.close();
   res.send(results);
 });
 
