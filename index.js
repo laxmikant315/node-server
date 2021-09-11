@@ -7,12 +7,9 @@ const puppeteer = require("puppeteer");
 app.use(express.static("public"));
 
 async function configureTheBrowser(url) {
-  const browser = await puppeteer.launch(
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-    ],
-  );
+  const browser = await puppeteer.launch({
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: "load", timeout: 0 });
   return page;
