@@ -8,7 +8,7 @@ const cors = require("cors");
 app.use(express.static("public"));
 app.use(cors());
 
-const page = await configureTheBrowser(url);
+let page = null;
 
 async function configureTheBrowser() {
   const browser = await puppeteer.launch({
@@ -18,6 +18,9 @@ async function configureTheBrowser() {
 }
 
 app.get("/getResult/:ticker", async (req, res) => {
+  if (!page) {
+    page = await configureTheBrowser(url);
+  }
   const ticker = req.params.ticker;
   console.log("ticker", ticker);
   const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=NSE:${ticker}&theme=dark`;
