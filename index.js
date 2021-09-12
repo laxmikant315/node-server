@@ -29,6 +29,8 @@ app.get("/getResult/:ticker", async (req, res) => {
   res.send(results);
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
+
+server.timeout = 9000;
