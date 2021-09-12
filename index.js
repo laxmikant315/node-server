@@ -19,7 +19,7 @@ async function configureTheBrowser() {
 
 app.get("/getResult/:ticker", async (req, res) => {
   if (!page) {
-    page = await configureTheBrowser(url);
+    page = await configureTheBrowser();
   }
   const ticker = req.params.ticker;
   console.log("ticker", ticker);
