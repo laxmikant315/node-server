@@ -25,6 +25,13 @@ app.get("/getResult/:ticker", async (req, res) => {
   console.log("ticker", ticker);
   const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=NSE:${ticker}&theme=dark`;
   await page.goto(url, { waitUntil: "networkidle0" });
+  const divs = await page.$(".jss13");
+
+  const button = await page.evaluateHandle(
+    () => document.querySelector(".jss13").lastChild
+  );
+
+  await button.click();
   let results = await page.content();
   res.send(results);
 });
