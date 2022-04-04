@@ -17,6 +17,14 @@ async function configureTheBrowser() {
   return await browser.newPage();
 }
 
+function sleep(milliseconds) {
+  const date = Date.now();
+  let currentDate = null;
+  do {
+    currentDate = Date.now();
+  } while (currentDate - date < milliseconds);
+}
+
 app.get("/getResult/:ticker", async (req, res) => {
   if (!page) {
     page = await configureTheBrowser();
@@ -32,6 +40,7 @@ app.get("/getResult/:ticker", async (req, res) => {
   );
 
   await button.click();
+  sleep(1000);
   let results = await page.content();
   res.send(results);
 });
