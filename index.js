@@ -36,7 +36,7 @@ app.get("/getResult/:ticker", async (req, res) => {
   // const divs = await page.$(".jss48");
 
   const button = await page.evaluateHandle(
-    () => document.querySelector(".jss51").lastChild
+    () => document.querySelector(".jss47").lastChild
   );
 
   await button.click();
