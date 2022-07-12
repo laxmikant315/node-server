@@ -41,7 +41,6 @@ app.get("/getResult/:ticker", async (req, res) => {
   //   return document.querySelector(".jss47").lastChild;
   // });
 
-  await page.waitForNavigation();
   await button.click();
   sleep(1000);
   await page.waitForSelector(".jss66");
