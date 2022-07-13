@@ -45,6 +45,7 @@ app.get("/getResult/:ticker", async (req, res) => {
     sleep(1000);
     await page.waitForSelector(".jss66");
     let results = await page.content();
+    await page.close();
     res.send(results);
   } catch (error) {
     console.log("Error", error);
