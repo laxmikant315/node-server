@@ -8,8 +8,6 @@ const cors = require("cors");
 app.use(express.static("public"));
 app.use(cors());
 
-let page = null;
-
 async function configureTheBrowser() {
   const browser = await puppeteer.launch({
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -27,6 +25,7 @@ function sleep(milliseconds) {
 
 app.get("/getResult/:ticker", async (req, res) => {
   try {
+    let page = null;
     if (!page) {
       page = await configureTheBrowser();
     }
