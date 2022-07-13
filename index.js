@@ -8,6 +8,8 @@ const cors = require("cors");
 app.use(express.static("public"));
 app.use(cors());
 
+let page = null;
+let isActive = false;
 async function configureTheBrowser() {
   const browser = await puppeteer.launch({
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -25,28 +27,31 @@ function sleep(milliseconds) {
 
 app.get("/getResult/:ticker", async (req, res) => {
   try {
-    let page = null;
-    if (!page) {
-      page = await configureTheBrowser();
-    }
-    const ticker = req.params.ticker;
-    console.log("ticker", ticker);
-    const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=NSE:${ticker}&theme=dark`;
-    await page.goto(url, { waitUntil: "networkidle0" });
-    // const divs = await page.$(".jss48");
-    const button = await page.evaluateHandle(
-      () => document.querySelector(".jss47").lastChild
-    );
-    // const button = await page.evaluateHandle(() => {
-    //   return document.querySelector(".jss47").lastChild;
-    // });
+    while (!isActive) {
+      isActive = true;
+      if (!page) {
+        page = await configureTheBrowser();
+      }
+      const ticker = req.params.ticker;
+      console.log("ticker", ticker);
+      const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=NSE:${ticker}&theme=dark`;
+      await page.goto(url, { waitUntil: "networkidle0" });
+      await page.waitForSelector(".jss47");
+      // const divs = await page.$(".jss48");
+      const button = await page.evaluateHandle(
+        () => document.querySelector(".jss47").lastChild
+      );
+      // const button = await page.evaluateHandle(() => {
+      //   return document.querySelector(".jss47").lastChild;
+      // });
 
-    await button.click();
-    sleep(1000);
-    await page.waitForSelector(".jss66");
-    let results = await page.content();
-    await page.close();
-    res.send(results);
+      await button.click();
+      sleep(1000);
+      await page.waitForSelector(".jss66");
+      let results = await page.content();
+      res.send(results);
+      isActive = false;
+    }
   } catch (error) {
     console.log("Error", error);
   }
