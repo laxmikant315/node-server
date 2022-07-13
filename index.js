@@ -36,7 +36,6 @@ app.get("/getResult/:ticker", async (req, res) => {
       console.log("ticker", ticker);
       const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=NSE:${ticker}&theme=dark`;
       await page.goto(url, { waitUntil: "networkidle0" });
-      await page.waitForSelector(".jss47");
       // const divs = await page.$(".jss48");
       const button = await page.evaluateHandle(
         () => document.querySelector(".jss47").lastChild
@@ -49,8 +48,8 @@ app.get("/getResult/:ticker", async (req, res) => {
       sleep(1000);
       await page.waitForSelector(".jss66");
       let results = await page.content();
-      res.send(results);
       isActive = false;
+      res.send(results);
     }
   } catch (error) {
     console.log("Error", error);
