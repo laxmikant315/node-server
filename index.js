@@ -47,7 +47,7 @@ async function getResult(ticker, exchange = "NSE") {
   return results;
 }
 
-app.get("/getResult/:ticker/:exchange", (req, res) => {
+app.get("/getResult/:ticker/:exchange?", (req, res) => {
   try {
     while (!isActive) {
       const ticker = req.params.ticker;
