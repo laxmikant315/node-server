@@ -25,12 +25,12 @@ function sleep(milliseconds) {
   } while (currentDate - date < milliseconds);
 }
 
-async function getResult(ticker) {
+async function getResult(ticker, exchange = "NSE") {
   if (!page) {
     page = await configureTheBrowser();
   }
   console.log("ticker", ticker);
-  const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=NSE:${ticker}&theme=dark`;
+  const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=${exchange}:${ticker}&theme=dark`;
   await page.goto(url, { waitUntil: "networkidle0" });
   // const divs = await page.$(".jss48");
   const button = await page.evaluateHandle(
@@ -47,12 +47,12 @@ async function getResult(ticker) {
   return results;
 }
 
-app.get("/getResult/:ticker", (req, res) => {
+app.get("/getResult/:ticker/:exchange", (req, res) => {
   try {
     while (!isActive) {
       const ticker = req.params.ticker;
       isActive = true;
-      getResult(ticker).then((results) => {
+      getResult(ticker, exchange).then((results) => {
         isActive = false;
         res.send(results);
       });
