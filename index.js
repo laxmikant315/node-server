@@ -51,6 +51,7 @@ app.get("/getResult/:ticker/:exchange", (req, res) => {
   try {
     while (!isActive) {
       const ticker = req.params.ticker;
+      const exchange = req.params.exchange;
       isActive = true;
       getResult(ticker, exchange).then((results) => {
         isActive = false;
