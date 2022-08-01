@@ -25,7 +25,7 @@ function sleep(milliseconds) {
   } while (currentDate - date < milliseconds);
 }
 
-async function getResult(ticker, type = "day", exchange = "NSE") {
+async function getResult(ticker, candelType = "day", exchange = "NSE") {
   if (!page) {
     page = await configureTheBrowser();
   }
@@ -35,7 +35,8 @@ async function getResult(ticker, type = "day", exchange = "NSE") {
   // const divs = await page.$(".jss48");
   const button = await page.evaluateHandle(
     // () => document.querySelector(".jss47").lastChild
-    () => document.getElementById(type)
+    (candelType) => document.getElementById(candelType),
+    candelType
   );
   // const button = await page.evaluateHandle(() => {
   //   return document.querySelector(".jss47").lastChild;
@@ -48,13 +49,14 @@ async function getResult(ticker, type = "day", exchange = "NSE") {
   return results;
 }
 
-app.get("/getResult/:ticker/:type/:exchange?", (req, res) => {
+app.get("/getResult/:ticker/:candelType/:exchange?", (req, res) => {
   try {
     while (!isActive) {
       const ticker = req.params.ticker;
       const exchange = req.params.exchange;
+      const candelType = req.params.candelType;
       isActive = true;
-      getResult(ticker, exchange).then((results) => {
+      getResult(ticker, candelType, exchange).then((results) => {
         isActive = false;
         res.send(results);
       });
