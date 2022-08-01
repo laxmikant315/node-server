@@ -25,7 +25,7 @@ function sleep(milliseconds) {
   } while (currentDate - date < milliseconds);
 }
 
-async function getResult(ticker, exchange = "NSE") {
+async function getResult(ticker, type = "day", exchange = "NSE") {
   if (!page) {
     page = await configureTheBrowser();
   }
@@ -34,7 +34,8 @@ async function getResult(ticker, exchange = "NSE") {
   await page.goto(url, { waitUntil: "networkidle0" });
   // const divs = await page.$(".jss48");
   const button = await page.evaluateHandle(
-    () => document.querySelector(".jss47").lastChild
+    // () => document.querySelector(".jss47").lastChild
+    () => document.getElementById(type)
   );
   // const button = await page.evaluateHandle(() => {
   //   return document.querySelector(".jss47").lastChild;
@@ -47,7 +48,7 @@ async function getResult(ticker, exchange = "NSE") {
   return results;
 }
 
-app.get("/getResult/:ticker/:exchange?", (req, res) => {
+app.get("/getResult/:ticker/:type/:exchange?", (req, res) => {
   try {
     while (!isActive) {
       const ticker = req.params.ticker;
