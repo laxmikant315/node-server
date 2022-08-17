@@ -33,7 +33,9 @@ async function getResult(ticker, candelType = "day", exchange = "NSE") {
   if (ticker && ticker.toUpperCase().includes("NIFTY")) {
     exchange = "INDICES";
   }
-  const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=${exchange}:${ticker}&theme=dark`;
+  const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=${exchange}:${encodeURIComponent(
+    ticker
+  )}&theme=dark`;
   await page.goto(url, { waitUntil: "networkidle0" });
   // const divs = await page.$(".jss48");
   const button = await page.evaluateHandle(
