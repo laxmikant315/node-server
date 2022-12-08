@@ -8,14 +8,7 @@ const cors = require("cors");
 app.use(express.static("public"));
 app.use(cors());
 
-let page = null;
 let isActive = false;
-async function configureTheBrowser() {
-  const browser = await puppeteer.launch({
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
-  return await browser.newPage();
-}
 
 function sleep(milliseconds) {
   const date = Date.now();
@@ -24,10 +17,16 @@ function sleep(milliseconds) {
     currentDate = Date.now();
   } while (currentDate - date < milliseconds);
 }
+let browser = null;
+let page = null;
 
 async function getResult(ticker, candelType = "day", exchange = "NSE") {
   if (!page) {
-    page = await configureTheBrowser();
+    console.log("Launching Browser");
+    browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+    page = await browser.newPage();
   }
   console.log("ticker", ticker);
   if (ticker && ticker.toUpperCase().includes("NIFTY")) {
@@ -51,6 +50,14 @@ async function getResult(ticker, candelType = "day", exchange = "NSE") {
   sleep(1000);
   // await page.waitForSelector(".jss66");
   let results = await page.content();
+  setTimeout(async () => {
+    if (!isActive) {
+      console.log("No Active Request, Closing Browser");
+      await browser.close();
+      browser = null;
+      page = null;
+    }
+  }, [10000]);
   return results;
 }
 
