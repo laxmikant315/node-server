@@ -57,7 +57,7 @@ async function getResult(ticker, candelType = "day", exchange = "NSE") {
       browser = null;
       page = null;
     }
-  }, [10000]);
+  }, [60000]);
   return results;
 }
 
