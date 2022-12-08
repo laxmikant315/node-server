@@ -51,7 +51,7 @@ async function getResult(ticker, candelType = "day", exchange = "NSE") {
   // await page.waitForSelector(".jss66");
   let results = await page.content();
   setTimeout(async () => {
-    if (!isActive) {
+    if (!isActive && browser && page) {
       console.log("No Active Request, Closing Browser");
       await browser.close();
       browser = null;
