@@ -27,6 +27,7 @@ async function getResult(ticker, candelType = "day", exchange = "NSE") {
       browser = await puppeteer.launch({
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
         ignoreDefaultArgs: ["--disable-extensions"],
+        executablePath: `/path/to/Chrome`,
       });
       page = await browser.newPage();
     }
@@ -37,7 +38,7 @@ async function getResult(ticker, candelType = "day", exchange = "NSE") {
     const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=${exchange}:${encodeURIComponent(
       ticker
     )}&theme=dark`;
-    await page.goto(url, { waitUntil: "networkidle0" });
+    await page.goto(url, { waitUntil: "networkidle0", timeout: 0 });
     // const divs = await page.$(".jss48");
     const button = await page.evaluateHandle(
       // () => document.querySelector(".jss47").lastChild
