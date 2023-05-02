@@ -27,7 +27,6 @@ async function getResult(ticker, candelType = "day", exchange = "NSE") {
       browser = await puppeteer.launch({
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
         ignoreDefaultArgs: ["--disable-extensions"],
-        executablePath: `/path/to/Chrome`,
       });
       page = await browser.newPage();
     }
