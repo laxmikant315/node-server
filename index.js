@@ -37,7 +37,7 @@ async function getResult(ticker, candelType = "day", exchange = "NSE") {
     const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=${exchange}:${encodeURIComponent(
       ticker
     )}&theme=dark`;
-    await page.goto(url, { waitUntil: "networkidle0", timeout: 0 });
+    await page.goto(url, { waitUntil: "networkidle0" });
     // const divs = await page.$(".jss48");
     const button = await page.evaluateHandle(
       // () => document.querySelector(".jss47").lastChild
@@ -52,12 +52,13 @@ async function getResult(ticker, candelType = "day", exchange = "NSE") {
     sleep(1000);
     // await page.waitForSelector(".jss66");
     let results = await page.content();
-    setTimeout(async () => {
+    const timeout1 = setTimeout(async () => {
       if (!isActive && browser && page) {
         console.log("No Active Request, Closing Browser");
         await browser.close();
         browser = null;
         page = null;
+        clearTimeout(timeout1);
       }
     }, [30000]);
     return results;
