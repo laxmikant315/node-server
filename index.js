@@ -11,7 +11,10 @@ let lastUsedTime = null;
 async function getBrowserInstance() {
   // If there's no browser instance, create one
   if (!browser) {
-    browser = await puppeteer.launch();
+    browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      ignoreDefaultArgs: ["--disable-extensions"],
+    });
     console.log("Launching Browser");
   }
   lastUsedTime = Date.now();
