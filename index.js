@@ -8,6 +8,7 @@ let browser = null;
 let page = null;
 let lastUsedTime = null;
 
+console.log("Start");
 async function getBrowserInstance() {
   // If there's no browser instance, create one
   if (!browser) {
