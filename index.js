@@ -46,7 +46,7 @@ setInterval(() => {
 }, 1000);
 
 app.get("/getResult/:ticker/:candelType/:exchange", async (req, res) => {
-  const { ticker, candelType, exchange } = req.params;
+  let { ticker, candelType, exchange } = req.params;
 
   // Get a page instance
   const pageInstance = await getPageInstance();
