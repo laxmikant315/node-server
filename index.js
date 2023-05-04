@@ -1,91 +1,81 @@
 const express = require("express");
-const app = express();
-const port = process.env.PORT || 4000;
 const puppeteer = require("puppeteer");
-const cors = require("cors");
 
-//Serving static files
-app.use(express.static("public"));
-app.use(cors());
+const app = express();
+const port = 3000;
 
-let isActive = false;
-
-function sleep(milliseconds) {
-  const date = Date.now();
-  let currentDate = null;
-  do {
-    currentDate = Date.now();
-  } while (currentDate - date < milliseconds);
-}
 let browser = null;
 let page = null;
+let lastUsedTime = null;
 
-async function getResult(ticker, candelType = "day", exchange = "NSE") {
-  try {
-    if (!page) {
-      console.log("Launching Browser");
-      browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        ignoreDefaultArgs: ["--disable-extensions"],
-      });
-      page = await browser.newPage();
-    }
-    console.log("ticker", ticker);
-    if (ticker && ticker.toUpperCase().includes("NIFTY")) {
-      exchange = "INDICES";
-    }
-    const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=${exchange}:${encodeURIComponent(
-      ticker
-    )}&theme=dark`;
-    await page.goto(url, { waitUntil: "networkidle0" });
-    // const divs = await page.$(".jss48");
-    const button = await page.evaluateHandle(
-      // () => document.querySelector(".jss47").lastChild
-      (candelType) => document.getElementById(candelType),
-      candelType
-    );
-    // const button = await page.evaluateHandle(() => {
-    //   return document.querySelector(".jss47").lastChild;
-    // });
-
-    await button.click();
-    sleep(1000);
-    // await page.waitForSelector(".jss66");
-    let results = await page.content();
-    const timeout1 = setTimeout(async () => {
-      if (!isActive && browser && page) {
-        console.log("No Active Request, Closing Browser");
-        await browser.close();
-        browser = null;
-        page = null;
-        clearTimeout(timeout1);
-      }
-    }, [30000]);
-    return results;
-  } catch (error) {
-    console.log("error", error);
+async function getBrowserInstance() {
+  // If there's no browser instance, create one
+  if (!browser) {
+    browser = await puppeteer.launch();
+    console.log("Launching Browser");
   }
+  lastUsedTime = Date.now();
+  return browser;
 }
 
-app.get("/getResult/:ticker/:candelType/:exchange?", (req, res) => {
-  try {
-    while (!isActive) {
-      const ticker = req.params.ticker;
-      const exchange = req.params.exchange;
-      const candelType = req.params.candelType;
-      isActive = true;
-      getResult(ticker, candelType, exchange).then((results) => {
-        isActive = false;
-        res.send(results);
-      });
-    }
-  } catch (error) {
-    console.log("Error", error);
+async function getPageInstance() {
+  // If there's no page instance, create one
+  if (!page) {
+    const browserInstance = await getBrowserInstance();
+    page = await browserInstance.newPage();
+    // Set the page timeout to 60 seconds
+    await page.setDefaultNavigationTimeout(30000);
+    console.log("Creating new Page");
   }
+  lastUsedTime = Date.now();
+  return page;
+}
+
+// Close the browser if it's been idle for a minute
+setInterval(() => {
+  if (browser && Date.now() - lastUsedTime > 30000) {
+    browser.close();
+    browser = null;
+    page = null;
+    console.log("Closing Browser");
+  }
+}, 1000);
+
+app.get("/getResult/:ticker/:candelType/:exchange", async (req, res) => {
+  const { ticker, candelType, exchange } = req.params;
+
+  // Get a page instance
+  const pageInstance = await getPageInstance();
+
+  if (ticker && ticker.toUpperCase().includes("NIFTY")) {
+    exchange = "INDICES";
+  }
+  // Construct the URL with the parameters
+  const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=${exchange}:${encodeURIComponent(
+    ticker
+  )}&theme=dark`;
+  console.log("URL", url);
+
+  // Navigate to the URL with a timeout of 60 seconds
+  await pageInstance.goto(url, { timeout: 30000 });
+
+  // Wait for the button with the candelType variable as the ID to appear on the page
+  await pageInstance.waitForSelector(`#${candelType}`);
+
+  // Click on the button with the type variable as the ID
+  await pageInstance.click(`#${candelType}`);
+
+  // Wait for 1 second for the page to load after clicking the button
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Get the page content and send it as a response
+  const pageContent = await pageInstance.content();
+  res.send(pageContent);
+
+  // Update the last used time for the page and browser
+  lastUsedTime = Date.now();
 });
 
-const server = app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+app.listen(port, () => {
+  console.log(`Server is listening on port ${port}`);
 });
-
-server.timeout = 9000;
