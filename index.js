@@ -5,10 +5,10 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 let browser = null;
-let page = null;
 let lastUsedTime = null;
 
 console.log("Start");
+
 async function getBrowserInstance() {
   // If there's no browser instance, create one
   if (!browser) {
@@ -22,34 +22,17 @@ async function getBrowserInstance() {
   return browser;
 }
 
-async function getPageInstance() {
-  // If there's no page instance, create one
-  if (!page) {
-    const browserInstance = await getBrowserInstance();
-    page = await browserInstance.newPage();
-    // Set the page timeout to 60 seconds
-    await page.setDefaultNavigationTimeout(30000);
-    console.log("Creating new Page");
-  }
-  lastUsedTime = Date.now();
-  return page;
-}
-
-// Close the browser if it's been idle for a minute
+// Close the browser if it's been idle for 30 seconds
 setInterval(() => {
   if (browser && Date.now() - lastUsedTime > 30000) {
     browser.close();
     browser = null;
-    page = null;
     console.log("Closing Browser");
   }
 }, 1000);
 
 app.get("/getResult/:ticker/:candelType/:exchange", async (req, res) => {
   let { ticker, candelType, exchange } = req.params;
-
-  // Get a page instance
-  const pageInstance = await getPageInstance();
 
   if (ticker && ticker.toUpperCase().includes("NIFTY")) {
     exchange = "INDICES";
@@ -60,7 +43,14 @@ app.get("/getResult/:ticker/:candelType/:exchange", async (req, res) => {
   )}&theme=dark`;
   console.log("URL", url);
 
-  // Navigate to the URL with a timeout of 60 seconds
+  // Get a new page instance
+  const browserInstance = await getBrowserInstance();
+  const pageInstance = await browserInstance.newPage();
+
+  // Set the page timeout to 30 seconds
+  await pageInstance.setDefaultNavigationTimeout(30000);
+
+  // Navigate to the URL with a timeout of 30 seconds
   await pageInstance.goto(url, { timeout: 30000 });
 
   // Wait for the button with the candelType variable as the ID to appear on the page
@@ -76,7 +66,10 @@ app.get("/getResult/:ticker/:candelType/:exchange", async (req, res) => {
   const pageContent = await pageInstance.content();
   res.send(pageContent);
 
-  // Update the last used time for the page and browser
+  // Close the page instance
+  await pageInstance.close();
+
+  // Update the last used time for the browser
   lastUsedTime = Date.now();
 });
 
