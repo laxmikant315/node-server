@@ -54,6 +54,9 @@ app.get("/getResult/:ticker/:candelType/:exchange", async (req, res) => {
   await pageInstance.goto(url, { timeout: 30000 });
 
   // Wait for the button with the candelType variable as the ID to appear on the page
+  if (candelType === "5min") {
+    candelType = "\\35min";
+  }
   await pageInstance.waitForSelector(`#${candelType}`);
 
   // Click on the button with the type variable as the ID
