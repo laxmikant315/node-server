@@ -38,9 +38,9 @@ app.get("/getResult/:ticker/:candelType/:exchange", async (req, res) => {
     exchange = "INDICES";
   }
   // Construct the URL with the parameters
-  const url = `https://mo.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=${exchange}:${encodeURIComponent(
+  const url = `https://technicalwidget.streak.tech/?utm_source=context-menu&utm_medium=kite&stock=${exchange}:${encodeURIComponent(
     ticker
-  )}&theme=dark`;
+  )}&theme=dark`
   console.log("URL", url);
 
   // Get a new page instance
