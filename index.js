@@ -39,29 +39,106 @@ setInterval(() => {
 
 app.post("/predictStockwithAI", async (req, res) => {
   console.log("Request Body:", req.body);
+
   let { symbol, buyPrice, targetPrice, stopLoss, currentPrice } = req.body;
   if(!buyPrice){
     return res.status(400).json({ error: "buyPrice is required" });
   }
   let prompt = `
-  Act as Stock Market Analyst and predict the following stock for swing trading.
-  If input values are not provided, you can use your own analysis to predict the values.
-  Stock Symbol: ${symbol},
-  Buy Price: ${buyPrice},
-  Target Price: ${targetPrice},
-  Stop Loss: ${stopLoss},
-  Current Price: ${currentPrice} ,
-  Provide a detailed analysis of the stock's performance, including technical indicators, market trends, and any relevant news or events that may impact the stock's price. 
-  Additionally, provide a recommendation on whether to buy, hold, or sell the stock based on your analysis.
-  also provide your target price and stoploss.
-  Mostly response in number format if values are numbers.
-  please respond in json format with the following keys: "analysis": <html_format>, "recommendation":"BUY|HOLD|SELL", "targetPrice", "stopLoss", "currentProfitLossPercent", "aiResponseConfidenceLevelPercent", "riskLevel", "timeFrame", "newsImpact":"POSITIVE|NEGATIVE|NEUTRAL", "newsImpactPercent" , "currentPrice","buyPrice":${buyPrice}
+  Act as an expert stock market analyst specializing in short-term swing trading.
 
+Analyze the following stock using the latest reliable market data available:
 
+Stock Symbol: ${symbol}
+User Buy Price: ${buyPrice}
+User Target Price: ${targetPrice}
+User Stop Loss: ${stopLoss}
+Current Price: ${currentPrice}
 
+Evaluate:
+
+* Price action and short/medium-term trend
+* RSI, MACD, EMA/SMA, Bollinger Bands and ATR
+* Volume and momentum
+* Key support and resistance
+* Market and sector trend
+* Recent relevant news and catalysts
+* Volatility and risk/reward
+
+Give greater weight to price action, volume, momentum, support/resistance and recent catalysts than to any single indicator.
+
+Determine whether the user's target price and stop loss are technically reasonable. If not, calculate more appropriate levels.
+
+Rules:
+
+* Never invent market data, technical indicators or news.
+* If reliable data is unavailable, reduce the confidence score.
+* Do not guarantee profits or future price movements.
+* Recommendation must be exactly BUY, HOLD, or SELL.
+* Prioritize capital preservation and favorable risk/reward.
+* Round numerical values to 2 decimal places.
+* Keep the analysis concise and actionable.
+* Preserve the original user values in userBuyPrice, userTargetPrice and userStopLoss.
+* correctTargetPrice and correctStopLoss must contain your recommended levels.
+* Do not blindly use the user's target or stop-loss.
+* If the current price is already near/above the target, consider whether entering or holding still provides a favorable risk/reward.
+* If the setup is weak or unclear, prefer HOLD rather than forcing a BUY or SELL.
+
+Calculations:
+currentProfitLossPercent = ((currentPrice - userBuyPrice) / userBuyPrice) * 100
+
+expectedReturnPercent = ((correctTargetPrice - currentPrice) / currentPrice) * 100
+
+downsidePercent = ((currentPrice - correctStopLoss) / currentPrice) * 100
+
+riskRewardRatio = (correctTargetPrice - currentPrice) / (currentPrice - correctStopLoss)
+
+Return ONLY valid JSON.
+No Markdown.
+No code fences.
+No text outside the JSON.
+Use valid JSON with double quotes and no trailing commas.
+
+{
+"analysis": "<concise HTML analysis>",
+"recommendation": "BUY|HOLD|SELL",
+"userBuyPrice": 0,
+"userTargetPrice": 0,
+"userStopLoss": 0,
+"correctTargetPrice": 0,
+"correctStopLoss": 0,
+"currentProfitLossPercent": 0,
+"expectedReturnPercent": 0,
+"downsidePercent": 0,
+"riskRewardRatio": 0,
+"aiResponseConfidenceLevelPercent": 0,
+"riskLevel": "LOW|MEDIUM|HIGH|VERY_HIGH",
+"timeFrame": "2-5 trading days",
+"newsImpact": "POSITIVE|NEGATIVE|NEUTRAL",
+"newsImpactPercent": 0,
+"currentPrice": 0
+}
+
+The HTML analysis must briefly contain:
+
+* Trend
+* Technical Signals
+* Support/Resistance
+* News/Catalysts
+* Trade Setup
+* Risk/Reward
+* Recommendation Reason
+
+Use only simple HTML such as <h3>, <p>, <ul>, <li>, <table>, <tr>, <th>, and <td>.
+
+For missing or unavailable numerical values, use null instead of inventing a value.
+
+If a calculation cannot be performed because required values are unavailable, return null for that field.
+
+Ensure all numerical values are internally consistent with the recommended target, stop-loss and current price.
   `;
   const interaction = await ai.interactions.create({
-    model: process.env.GOOGLE_GENAI_MODEL,
+    model: req.body.model || process.env.GOOGLE_GENAI_MODEL,
     input: prompt,
   });
   
