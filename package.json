@@ -8,10 +8,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
+    "dev": "nodemon --env-file=.env index.js ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@google/genai": "^2.16.0",
     "express": "^5.2.1",
     "puppeteer": "^24.40.0"
   },
