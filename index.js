@@ -1,13 +1,18 @@
 const express = require("express");
 const puppeteer = require("puppeteer");
 
+const { GoogleGenAI } = require("@google/genai");
+
 const app = express();
 const port = process.env.PORT || 4000;
+console.log("GOOGLE_GENAI_API_KEY", process.env.GOOGLE_GENAI_API_KEY);
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY });
 
 let browser = null;
 let lastUsedTime = null;
 
 console.log("Start");
+app.use(express.json());
 
 async function getBrowserInstance() {
   // If there's no browser instance, create one
@@ -31,6 +36,39 @@ setInterval(() => {
   }
 }, 1000);
 
+
+app.post("/predictStockwithAI", async (req, res) => {
+  console.log("Request Body:", req.body);
+  let { symbol, buyPrice, targetPrice, stopLoss, currentPrice } = req.body;
+  if(!buyPrice){
+    return res.status(400).json({ error: "buyPrice is required" });
+  }
+  let prompt = `
+  Act as Stock Market Analyst and predict the following stock for swing trading.
+  If input values are not provided, you can use your own analysis to predict the values.
+  Stock Symbol: ${symbol},
+  Buy Price: ${buyPrice},
+  Target Price: ${targetPrice},
+  Stop Loss: ${stopLoss},
+  Current Price: ${currentPrice} ,
+  Provide a detailed analysis of the stock's performance, including technical indicators, market trends, and any relevant news or events that may impact the stock's price. 
+  Additionally, provide a recommendation on whether to buy, hold, or sell the stock based on your analysis.
+  also provide your target price and stoploss.
+  Mostly response in number format if values are numbers.
+  please respond in json format with the following keys: "analysis": <html_format>, "recommendation":"BUY|HOLD|SELL", "targetPrice", "stopLoss", "currentProfitLossPercent", "aiResponseConfidenceLevelPercent", "riskLevel", "timeFrame", "newsImpact":"POSITIVE|NEGATIVE|NEUTRAL", "newsImpactPercent" , "currentPrice","buyPrice":${buyPrice}
+
+
+
+  `;
+  const interaction = await ai.interactions.create({
+    model: process.env.GOOGLE_GENAI_MODEL,
+    input: prompt,
+  });
+  
+
+  return res.json({ answer: JSON.parse(interaction.output_text.replace(/```json\n|```/g, '')) });
+
+})
 app.get("/getResult/:ticker/:candelType/:exchange", async (req, res) => {
   let { ticker, candelType, exchange } = req.params;
 
