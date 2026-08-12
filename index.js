@@ -136,6 +136,8 @@ For missing or unavailable numerical values, use null instead of inventing a val
 If a calculation cannot be performed because required values are unavailable, return null for that field.
 
 Ensure all numerical values are internally consistent with the recommended target, stop-loss and current price.
+
+Make sure currentProfitLossPercent calculated correctly.
   `;
   const interaction = await ai.interactions.create({
     model: req.body.model || process.env.GOOGLE_GENAI_MODEL,
