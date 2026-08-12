@@ -183,7 +183,7 @@ app.get("/getResult/:ticker/:candelType/:exchange", async (req, res) => {
     await pageInstance.click(`#${candelType}`);
 
     // Wait for 1 second for the page to load after clicking the button
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Get the page content and send it as a response
     const pageContent = await pageInstance.content();
